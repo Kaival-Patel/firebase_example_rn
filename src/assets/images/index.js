@@ -1,0 +1,1 @@
+export const LOGIN_COVER = require('./login_cover.jpg');
