@@ -3,8 +3,9 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {extendTheme, NativeBaseProvider} from 'native-base';
 import React from 'react';
 import {View, Text} from 'react-native';
-import Fonts from "./src/global/fonts";
+import Fonts from './src/global/fonts';
 import {LoginScreen} from './src/screens/login_screen';
+import { SignupScreen } from './src/screens/signup_screen';
 export default App = () => {
   const Stack = createStackNavigator();
   const newColorTheme = {
@@ -23,9 +24,7 @@ export default App = () => {
       heading: Fonts.product_sans_bold,
       body: Fonts.product_sans,
     },
-    components:{
-      
-    },
+    components: {},
     fontSizes: {
       xxs: 10,
       xs: 12,
@@ -53,6 +52,13 @@ export default App = () => {
               component={LoginScreen}
               options={{
                 headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="SignUp"
+              component={SignupScreen}
+              options={{
+                headerShown: true,
               }}
             />
           </Stack.Navigator>

@@ -17,13 +17,14 @@ export const CustomTextInput = ({
   error,
   password,
   onFocus = () => {},
-  onChangeText = (value) => {},
+  onChangeText = (value) => {}, 
 }) => {
   const [hidePassword, setHidePassword] = useState(true);
   const [isFocused, setIsFocused] = useState(false);
   return (
     <Center>
       <Input
+      
         w={{
           base: '90%',
           md: '90%',

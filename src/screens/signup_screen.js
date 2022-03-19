@@ -5,7 +5,8 @@ import {TouchableOpacity} from 'react-native-gesture-handler';
 import {LOGIN_COVER} from '../assets/images/index';
 import {CustomTextInput} from '../components/text_input';
 import Fonts from '../global/fonts';
-export const LoginScreen = ({navigation, route}) => {
+export const SignupScreen = ({navigation, route}) => {
+  const [isLoading, setIsLoading] = React.useState(false);
   const [invalidPassword, setInValidPassword] = React.useState(false);
   const [formErrorData, setFormErrorData] = React.useState({
     email: '',
@@ -57,7 +58,7 @@ export const LoginScreen = ({navigation, route}) => {
         <View>
           <Image source={LOGIN_COVER} style={styles.login_cover} />
           <Text style={styles.header}>Hello</Text>
-          <Text style={styles.subtitle}>Login with Email and Password</Text>
+          <Text style={styles.subtitle}>SignUp with Email and Password</Text>
           <FormControl isInvalid={invalidEmail}>
             <CustomTextInput
               onChangeText={value => {
@@ -90,21 +91,27 @@ export const LoginScreen = ({navigation, route}) => {
               {formErrorData.password}
             </FormControl.ErrorMessage>
           </FormControl>
-          <Button margin={5} bgColor="primary.100" onPress={handleLogin}>
-            Login
-          </Button>
+          {isLoading ? (
+            <Button margin={5} bgColor="primary.100" isLoading>
+              Signing Up
+            </Button>
+          ) : (
+            <Button margin={5} bgColor="primary.100" onPress={handleLogin}>
+              Signup
+            </Button>
+          )}
         </View>
         <View
           style={{
             justifyContent: 'center',
             flexDirection: 'row',
           }}>
-          <Text>Don't have an account? </Text>
+          <Text>Already have an account? </Text>
           <TouchableOpacity
             onPress={() => {
-              navigation.navigate('SignUp');
+              navigation.pop();
             }}>
-            <Text color={'primary.100'}>Register</Text>
+            <Text color={'primary.100'}>Login</Text>
           </TouchableOpacity>
         </View>
       </View>
