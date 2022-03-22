@@ -1,8 +1,9 @@
-import {Button, FormControl, Text} from 'native-base';
+import {Button, FormControl, Text, Toast} from 'native-base';
 import React from 'react';
 import {View, Image, StyleSheet, ScrollView, TextInput} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {LOGIN_COVER} from '../assets/images/index';
+import {signUpWithEmailPassword} from '../backend/auth_service';
 import {CustomTextInput} from '../components/text_input';
 import Fonts from '../global/fonts';
 export const SignupScreen = ({navigation, route}) => {
@@ -15,7 +16,7 @@ export const SignupScreen = ({navigation, route}) => {
   const [invalidEmail, setInvalidEmail] = React.useState(false);
   const [formData, setData] = React.useState({});
   console.log(formErrorData);
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (formData.email == undefined || formData.email == '') {
       setFormErrorData({...formErrorData, email: 'Email is required'});
       setInvalidEmail(true);
@@ -50,6 +51,24 @@ export const SignupScreen = ({navigation, route}) => {
       return;
     }
     if (!invalidEmail && !invalidPassword) {
+      setIsLoading(true);
+      signUpWithEmailPassword(formData.email, formData.password)
+        .then(() => {
+          setIsLoading(false);
+          Toast.show({title: 'User account created & signed in!'});
+        })
+        .catch(error => {
+          setIsLoading(false);
+          if (error.code === 'auth/email-already-in-use') {
+            Toast.show({title: 'Email already in use'});
+          }
+
+          if (error.code === 'auth/invalid-email') {
+            Toast.show({title: 'Email is invalid'});
+          }
+
+          console.error(error);
+        });
     }
   };
   return (

@@ -17,7 +17,10 @@ export const CustomTextInput = ({
   error,
   password,
   onFocus = () => {},
+  onEditingSubmitted = () => {},
   onChangeText = (value) => {}, 
+  returnKeyType="next",
+  ref,
 }) => {
   const [hidePassword, setHidePassword] = useState(true);
   const [isFocused, setIsFocused] = useState(false);
@@ -66,11 +69,14 @@ export const CustomTextInput = ({
           onFocus();
           setIsFocused(true);
         }}
+        onSubmitEditing={onEditingSubmitted}
         onChangeText={onChangeText}
         type={password ? (hidePassword ? 'password' : 'text') : 'default'}
         onBlur={() => {
           setIsFocused(false);
         }}
+        ref={ref}
+        returnKeyType={returnKeyType}
         passwordRules="required: upper; required: lower; required: digit; max-consecutive: 2; minlength: 8"
         borderColor={isFocused ? 'primary.100' : '#C0C0C0'}
         variant="outline"
