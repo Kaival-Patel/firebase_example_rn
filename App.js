@@ -4,8 +4,9 @@ import {extendTheme, NativeBaseProvider} from 'native-base';
 import React from 'react';
 import {View, Text} from 'react-native';
 import Fonts from './src/global/fonts';
+import {UserContext} from './src/hooks/context/user_context';
 import {LoginScreen} from './src/screens/login_screen';
-import { SignupScreen } from './src/screens/signup_screen';
+import {SignupScreen} from './src/screens/signup_screen';
 export default App = () => {
   const Stack = createStackNavigator();
   const newColorTheme = {
@@ -44,26 +45,38 @@ export default App = () => {
   });
   return (
     <NativeBaseProvider theme={theme}>
-      <NavigationContainer>
-        {
-          <Stack.Navigator initialRouteName="Login">
-            <Stack.Screen
-              name="Login"
-              component={LoginScreen}
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              name="SignUp"
-              component={SignupScreen}
-              options={{
-                headerShown: true,
-              }}
-            />
-          </Stack.Navigator>
-        }
-      </NavigationContainer>
+      <UserContext.Provider
+        value={{
+          authenticated: false,
+          user: {
+            name: '',
+            email: '',
+            photo: '',
+            uid: '',
+          },
+          setAuthenticated: () => {},
+        }}>
+        <NavigationContainer>
+          {
+            <Stack.Navigator initialRouteName="Login">
+              <Stack.Screen
+                name="Login"
+                component={LoginScreen}
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="SignUp"
+                component={SignupScreen}
+                options={{
+                  headerShown: true,
+                }}
+              />
+            </Stack.Navigator>
+          }
+        </NavigationContainer>
+      </UserContext.Provider>
     </NativeBaseProvider>
   );
 };
