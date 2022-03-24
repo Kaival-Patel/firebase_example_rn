@@ -1,11 +1,13 @@
-import {Button, FormControl, Text,Toast} from 'native-base';
-import React,{useRef} from 'react';
+import {Button, FormControl, Text, Toast} from 'native-base';
+import React, {useRef} from 'react';
 import {View, Image, StyleSheet, ScrollView, TextInput} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
+import {useContext} from 'react/cjs/react.development';
 import {LOGIN_COVER} from '../assets/images/index';
 import {signInWithEmailPassword} from '../backend/auth_service';
 import {CustomTextInput} from '../components/text_input';
 import Fonts from '../global/fonts';
+import {UserContext} from '../hooks/context/user_context';
 export const LoginScreen = ({navigation, route}) => {
   //VARIABLES
   const [invalidPassword, setInValidPassword] = React.useState(false);
@@ -16,6 +18,9 @@ export const LoginScreen = ({navigation, route}) => {
   const [invalidEmail, setInvalidEmail] = React.useState(false);
   const [formData, setData] = React.useState({});
   const [isLoading, setIsLoading] = React.useState(false);
+
+  //USER context
+  const {setAuthenticated} = React.useContext(UserContext);
 
   //FUNCTIONS
   const handleLogin = async () => {
@@ -55,9 +60,12 @@ export const LoginScreen = ({navigation, route}) => {
     if (!invalidEmail && !invalidPassword) {
       setIsLoading(true);
       signInWithEmailPassword(formData.email, formData.password)
-        .then(() => {
+        .then((v) => {
           setIsLoading(false);
           Toast.show({title: 'Logged in successfully!'});
+          setAuthenticated((){
+            
+          });
         })
         .catch(error => {
           setIsLoading(false);
@@ -68,7 +76,7 @@ export const LoginScreen = ({navigation, route}) => {
           if (error.code === 'auth/user-not-found') {
             Toast.show({title: 'User not found'});
           }
-          if(error.code === 'auth/wrong-password'){
+          if (error.code === 'auth/wrong-password') {
             Toast.show({title: 'Wrong password'});
           }
           console.error(error);
@@ -103,7 +111,7 @@ export const LoginScreen = ({navigation, route}) => {
           <FormControl isInvalid={invalidPassword} marginTop={5}>
             <CustomTextInput
               label={'Password'}
-              returnKeyType='done'
+              returnKeyType="done"
               onFocus={() => {}}
               icon="lock"
               onChangeText={value => {
@@ -113,20 +121,19 @@ export const LoginScreen = ({navigation, route}) => {
                 handleLogin();
               }}
               password={true}
-              
             />
             <FormControl.ErrorMessage marginLeft={5}>
               {formErrorData.password}
             </FormControl.ErrorMessage>
           </FormControl>
-          {isLoading? (
-          <Button margin={5} bgColor="primary.100" isLoading>
-            Signing in
-          </Button>
-          ):(
-          <Button margin={5} bgColor="primary.100" onPress={handleLogin}>
-            Login
-          </Button>
+          {isLoading ? (
+            <Button margin={5} bgColor="primary.100" isLoading>
+              Signing in
+            </Button>
+          ) : (
+            <Button margin={5} bgColor="primary.100" onPress={handleLogin}>
+              Login
+            </Button>
           )}
         </View>
         <View
