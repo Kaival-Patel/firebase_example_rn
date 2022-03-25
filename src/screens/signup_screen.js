@@ -4,19 +4,29 @@ import {View, Image, StyleSheet, ScrollView, TextInput} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {LOGIN_COVER} from '../assets/images/index';
 import {signUpWithEmailPassword} from '../backend/auth_service';
+import {createUser} from '../backend/user_service';
 import {CustomTextInput} from '../components/text_input';
 import Fonts from '../global/fonts';
+import {UserContext} from '../hooks/context/user_context';
 export const SignupScreen = ({navigation, route}) => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [invalidPassword, setInValidPassword] = React.useState(false);
+  const [invalidName, setInValidName] = React.useState(false);
   const [formErrorData, setFormErrorData] = React.useState({
     email: '',
     password: '',
   });
+  //USER context
+  const userProvider = React.useContext(UserContext);
   const [invalidEmail, setInvalidEmail] = React.useState(false);
   const [formData, setData] = React.useState({});
   console.log(formErrorData);
   const handleLogin = async () => {
+    if(formData.name == undefined || formData.name == ''){
+      setFormErrorData({...formErrorData, name: 'Name is required'});
+      setInValidName(true);
+      return;
+    }
     if (formData.email == undefined || formData.email == '') {
       setFormErrorData({...formErrorData, email: 'Email is required'});
       setInvalidEmail(true);
@@ -53,9 +63,19 @@ export const SignupScreen = ({navigation, route}) => {
     if (!invalidEmail && !invalidPassword) {
       setIsLoading(true);
       signUpWithEmailPassword(formData.email, formData.password)
-        .then(() => {
-          setIsLoading(false);
-          Toast.show({title: 'User account created & signed in!'});
+        .then(v => {
+          const user = {
+            name: formData.name,
+            email: v.user.email,
+            photo:
+              'https://firebasestorage.googleapis.com/v0/b/pebbles-60a77.appspot.com/o/pexels-confinedriley-11524597.jpg?alt=media&token=39086b9a-ccf7-49f3-b06e-1904cf3b7a24',
+            uid: v.user.uid,
+          };
+          createUser(user).then(() => {
+            setIsLoading(false);
+            userProvider.updateUser(user);
+            Toast.show({title: 'User account created & signed in!'});
+          });
         })
         .catch(error => {
           setIsLoading(false);
@@ -78,7 +98,26 @@ export const SignupScreen = ({navigation, route}) => {
           <Image source={LOGIN_COVER} style={styles.login_cover} />
           <Text style={styles.header}>Hello</Text>
           <Text style={styles.subtitle}>SignUp with Email and Password</Text>
-          <FormControl isInvalid={invalidEmail}>
+          <FormControl isInvalid={invalidName}>
+            <CustomTextInput
+              onChangeText={value => {
+                setData({...formData, name: value});
+              }}
+              icon="user"
+              
+              label={'Name'}
+              onFocus={() => {}}
+            />
+            <FormControl.ErrorMessage
+              marginLeft={5} 
+              w={{
+                base: '90%',
+                md: '90%',
+              }}>
+              {formErrorData.name}
+            </FormControl.ErrorMessage >
+          </FormControl>
+          <FormControl isInvalid={invalidEmail} marginTop={5}>
             <CustomTextInput
               onChangeText={value => {
                 setData({...formData, email: value});

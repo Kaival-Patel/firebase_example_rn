@@ -5,6 +5,7 @@ import {TouchableOpacity} from 'react-native-gesture-handler';
 import {useContext} from 'react/cjs/react.development';
 import {LOGIN_COVER} from '../assets/images/index';
 import {signInWithEmailPassword} from '../backend/auth_service';
+import {getUserDetails} from '../backend/user_service';
 import {CustomTextInput} from '../components/text_input';
 import Fonts from '../global/fonts';
 import {UserContext} from '../hooks/context/user_context';
@@ -20,7 +21,7 @@ export const LoginScreen = ({navigation, route}) => {
   const [isLoading, setIsLoading] = React.useState(false);
 
   //USER context
-  const {setAuthenticated} = React.useContext(UserContext);
+  const userProvider = React.useContext(UserContext);
 
   //FUNCTIONS
   const handleLogin = async () => {
@@ -60,11 +61,28 @@ export const LoginScreen = ({navigation, route}) => {
     if (!invalidEmail && !invalidPassword) {
       setIsLoading(true);
       signInWithEmailPassword(formData.email, formData.password)
-        .then((v) => {
-          setIsLoading(false);
-          Toast.show({title: 'Logged in successfully!'});
-          setAuthenticated((){
-            
+        .then(v => {
+          
+          getUserDetails(v.user.uid).then(snap => {
+            setIsLoading(false);
+            if (snap.exists) {
+              if (snap.data() != null) {
+                let userData = snap.data();
+                const user = {
+                  name: userData.name,
+                  email: v.user.email,
+                  photo: userData.photo,
+                  uid: v.user.uid,
+                };
+                userProvider.updateUser(user);
+                Toast.show({title: 'Logged in successfully!'});
+              }
+            }
+            else{
+              
+              Toast.show({title: 'Please signup first!'});
+              return;
+            }
           });
         })
         .catch(error => {
