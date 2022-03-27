@@ -1,30 +1,32 @@
 import {Button, FormControl, Text, Toast} from 'native-base';
-import React, {useRef} from 'react';
+import React from 'react';
 import {View, Image, StyleSheet, ScrollView, TextInput} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
-import {useContext} from 'react/cjs/react.development';
-import {LOGIN_COVER} from '../assets/images/index';
-import {signInWithEmailPassword} from '../backend/auth_service';
-import {getUserDetails} from '../backend/user_service';
-import {CustomTextInput} from '../components/text_input';
-import Fonts from '../global/fonts';
-import {UserContext} from '../hooks/context/user_context';
-export const LoginScreen = ({navigation, route}) => {
-  //VARIABLES
+import {LOGIN_COVER} from '../../assets/images/index';
+import {signUpWithEmailPassword} from '../../backend/auth_service';
+import {createUser, listenForAnyUserChanges} from '../../backend/user_service';
+import {CustomTextInput} from '../../components/text_input';
+import Fonts from '../../global/fonts';
+import {UserContext} from '../../hooks/context/user_context';
+export const SignupScreen = ({navigation, route}) => {
+  const [isLoading, setIsLoading] = React.useState(false);
   const [invalidPassword, setInValidPassword] = React.useState(false);
+  const [invalidName, setInValidName] = React.useState(false);
   const [formErrorData, setFormErrorData] = React.useState({
     email: '',
     password: '',
   });
-  const [invalidEmail, setInvalidEmail] = React.useState(false);
-  const [formData, setData] = React.useState({});
-  const [isLoading, setIsLoading] = React.useState(false);
-
   //USER context
   const userProvider = React.useContext(UserContext);
-
-  //FUNCTIONS
+  const [invalidEmail, setInvalidEmail] = React.useState(false);
+  const [formData, setData] = React.useState({});
+  console.log(formErrorData);
   const handleLogin = async () => {
+    if(formData.name == undefined || formData.name == ''){
+      setFormErrorData({...formErrorData, name: 'Name is required'});
+      setInValidName(true);
+      return;
+    }
     if (formData.email == undefined || formData.email == '') {
       setFormErrorData({...formErrorData, email: 'Email is required'});
       setInvalidEmail(true);
@@ -60,43 +62,33 @@ export const LoginScreen = ({navigation, route}) => {
     }
     if (!invalidEmail && !invalidPassword) {
       setIsLoading(true);
-      signInWithEmailPassword(formData.email, formData.password)
+      signUpWithEmailPassword(formData.email, formData.password)
         .then(v => {
-          
-          getUserDetails(v.user.uid).then(snap => {
+          const user = {
+            name: formData.name,
+            email: v.user.email,
+            photo:
+              'https://firebasestorage.googleapis.com/v0/b/pebbles-60a77.appspot.com/o/pexels-confinedriley-11524597.jpg?alt=media&token=39086b9a-ccf7-49f3-b06e-1904cf3b7a24',
+            uid: v.user.uid,
+            status : 1
+          };
+          createUser(user).then(() => {
             setIsLoading(false);
-            if (snap.exists) {
-              if (snap.data() != null) {
-                let userData = snap.data();
-                const user = {
-                  name: userData.name,
-                  email: v.user.email,
-                  photo: userData.photo,
-                  uid: v.user.uid,
-                };
-                userProvider.updateUser(user);
-                Toast.show({title: 'Logged in successfully!'});
-              }
-            }
-            else{
-              
-              Toast.show({title: 'Please signup first!'});
-              return;
-            }
+            userProvider.updateUser(user);
+            Toast.show({title: 'User account created & signed in!'});
+            navigation.replace('HomeScreen');
           });
         })
         .catch(error => {
           setIsLoading(false);
+          if (error.code === 'auth/email-already-in-use') {
+            Toast.show({title: 'Email already in use'});
+          }
 
           if (error.code === 'auth/invalid-email') {
             Toast.show({title: 'Email is invalid'});
           }
-          if (error.code === 'auth/user-not-found') {
-            Toast.show({title: 'User not found'});
-          }
-          if (error.code === 'auth/wrong-password') {
-            Toast.show({title: 'Wrong password'});
-          }
+
           console.error(error);
         });
     }
@@ -107,8 +99,27 @@ export const LoginScreen = ({navigation, route}) => {
         <View>
           <Image source={LOGIN_COVER} style={styles.login_cover} />
           <Text style={styles.header}>Hello</Text>
-          <Text style={styles.subtitle}>Login with Email and Password</Text>
-          <FormControl isInvalid={invalidEmail}>
+          <Text style={styles.subtitle}>SignUp with Email and Password</Text>
+          <FormControl isInvalid={invalidName}>
+            <CustomTextInput
+              onChangeText={value => {
+                setData({...formData, name: value});
+              }}
+              icon="user"
+              
+              label={'Name'}
+              onFocus={() => {}}
+            />
+            <FormControl.ErrorMessage
+              marginLeft={5} 
+              w={{
+                base: '90%',
+                md: '90%',
+              }}>
+              {formErrorData.name}
+            </FormControl.ErrorMessage >
+          </FormControl>
+          <FormControl isInvalid={invalidEmail} marginTop={5}>
             <CustomTextInput
               onChangeText={value => {
                 setData({...formData, email: value});
@@ -129,14 +140,10 @@ export const LoginScreen = ({navigation, route}) => {
           <FormControl isInvalid={invalidPassword} marginTop={5}>
             <CustomTextInput
               label={'Password'}
-              returnKeyType="done"
               onFocus={() => {}}
               icon="lock"
               onChangeText={value => {
                 setData({...formData, password: value});
-              }}
-              onEditingSubmitted={() => {
-                handleLogin();
               }}
               password={true}
             />
@@ -146,11 +153,11 @@ export const LoginScreen = ({navigation, route}) => {
           </FormControl>
           {isLoading ? (
             <Button margin={5} bgColor="primary.100" isLoading>
-              Signing in
+              Signing Up
             </Button>
           ) : (
             <Button margin={5} bgColor="primary.100" onPress={handleLogin}>
-              Login
+              Signup
             </Button>
           )}
         </View>
@@ -159,12 +166,12 @@ export const LoginScreen = ({navigation, route}) => {
             justifyContent: 'center',
             flexDirection: 'row',
           }}>
-          <Text>Don't have an account? </Text>
+          <Text>Already have an account? </Text>
           <TouchableOpacity
             onPress={() => {
-              navigation.navigate('SignUp');
+              navigation.pop();
             }}>
-            <Text color={'primary.100'}>Register</Text>
+            <Text color={'primary.100'}>Login</Text>
           </TouchableOpacity>
         </View>
       </View>

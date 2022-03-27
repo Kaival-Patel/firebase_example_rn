@@ -3,10 +3,12 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {extendTheme, NativeBaseProvider} from 'native-base';
 import React from 'react';
 import {View, Text} from 'react-native';
-import Fonts from './src/global/fonts';
+
 import {UserProvider} from './src/hooks/context/user_context';
-import {LoginScreen} from './src/screens/login_screen';
-import {SignupScreen} from './src/screens/signup_screen';
+import { HomeScreen } from './src/screens/home/home_screen';
+import {LoginScreen} from './src/screens/auth/login_screen';
+import {SignupScreen} from './src/screens/auth/signup_screen';
+import Fonts from './src/global/fonts';
 export default App = () => {
   const Stack = createStackNavigator();
   const newColorTheme = {
@@ -61,6 +63,13 @@ export default App = () => {
                 component={SignupScreen}
                 options={{
                   headerShown: true,
+                }}
+              />
+              <Stack.Screen
+                name="HomeScreen"
+                component={HomeScreen}
+                options={{
+                  headerShown: false,
                 }}
               />
             </Stack.Navigator>
