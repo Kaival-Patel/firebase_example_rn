@@ -1,8 +1,11 @@
-import { View ,Text} from 'native-base';
+import {View, Text} from 'native-base';
 import React from 'react';
+import { ChatListHeader } from './chat_list_header';
 
 export const ChatList = ({navigation, route}) => {
-    return (<View>
-        <Text>ChatList</Text>
-    </View>)
-}
+  return (
+    <View>
+      <ChatListHeader/>
+    </View>
+  );
+};

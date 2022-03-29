@@ -9,6 +9,7 @@ import { HomeScreen } from './src/screens/home/home_screen';
 import {LoginScreen} from './src/screens/auth/login_screen';
 import {SignupScreen} from './src/screens/auth/signup_screen';
 import Fonts from './src/global/fonts';
+import { AutoLoginChecker } from './src/screens/auth/auto_login_checker';
 export default App = () => {
   const Stack = createStackNavigator();
   const newColorTheme = {
@@ -50,7 +51,14 @@ export default App = () => {
       <UserProvider>
         <NavigationContainer>
           {
-            <Stack.Navigator initialRouteName="Login">
+            <Stack.Navigator initialRouteName="AutoLogin">
+              <Stack.Screen
+                name="AutoLogin"
+                component={AutoLoginChecker}
+                options={{
+                  headerShown: false,
+                }}
+              />
               <Stack.Screen
                 name="Login"
                 component={LoginScreen}
