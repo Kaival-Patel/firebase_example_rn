@@ -1,11 +1,17 @@
-import {View, Text} from 'native-base';
 import React from 'react';
-import { ChatListHeader } from './chat_list_header';
-
-export const ChatList = ({navigation, route}) => {
+import {FlatList, Text, View} from 'native-base';
+import {storyData} from '../../constants/constant';
+export const ChatListComponent = () => {
   return (
-    <View>
-      <ChatListHeader/>
+    <View borderTopLeftRadius={30} borderTopRightRadius={30}>
+      <FlatList
+        data={storyData}
+        renderItem={({item}) => (
+          <View>
+            <Text>{item.name}</Text>
+          </View>
+        )}
+      />
     </View>
   );
 };
