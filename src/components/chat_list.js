@@ -1,6 +1,6 @@
 import React from 'react';
 import {FlatList, Text, View} from 'native-base';
-import {storyData} from '../../constants/constant';
+import {storyData} from '../constants/constant';
 export const ChatListComponent = () => {
   return (
     <View borderTopLeftRadius={30} borderTopRightRadius={30}>

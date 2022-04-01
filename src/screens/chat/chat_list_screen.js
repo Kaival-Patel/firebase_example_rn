@@ -1,13 +1,12 @@
 import {View, Text} from 'native-base';
 import React from 'react';
-import {ChatListComponent} from './chat_list';
-import {ChatListHeader} from './chat_list_header';
-import {StoryBrowser} from './story_browser';
-
+import { ChatListComponent } from '../../components/chat_list';
+import { ChatListHeader } from '../../components/chat_list_header';
+import { StoryBrowser } from '../../components/story_browser';
 export const ChatList = ({navigation, route}) => {
   return (
     <View>
-      <ChatListHeader />
+      <ChatListHeader navigation={navigation} route={route} />
       <StoryBrowser />
       <ChatListComponent />
     </View>

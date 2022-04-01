@@ -5,11 +5,12 @@ import React from 'react';
 import {View, Text} from 'react-native';
 
 import {UserProvider} from './src/hooks/context/user_context';
-import { HomeScreen } from './src/screens/home/home_screen';
+import {HomeScreen} from './src/screens/home/home_screen';
 import {LoginScreen} from './src/screens/auth/login_screen';
 import {SignupScreen} from './src/screens/auth/signup_screen';
 import Fonts from './src/global/fonts';
-import { AutoLoginChecker } from './src/screens/auth/auto_login_checker';
+import {AutoLoginChecker} from './src/screens/auth/auto_login_checker';
+import { NewChatSearch } from './src/screens/chat/new_chat_search';
 export default App = () => {
   const Stack = createStackNavigator();
   const newColorTheme = {
@@ -76,6 +77,13 @@ export default App = () => {
               <Stack.Screen
                 name="HomeScreen"
                 component={HomeScreen}
+                options={{
+                  headerShown: false,
+                }}
+              />
+               <Stack.Screen
+                name="NewChatSearch"
+                component={NewChatSearch}
                 options={{
                   headerShown: false,
                 }}

@@ -10,11 +10,13 @@ import {
 } from 'native-base';
 import React from 'react';
 import {StyleSheet} from 'react-native';
-import {UserContext} from '../../hooks/context/user_context';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {storyData} from '../../constants/constant';
+import { storyData } from '../constants/constant';
+import { UserContext } from '../hooks/context/user_context';
 
 export const StoryBrowser = () => {
+
+  
   return (
     <View style={style.body}>
       <View

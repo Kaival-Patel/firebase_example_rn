@@ -1,6 +1,6 @@
 import firestore from '@react-native-firebase/firestore';
 import React from 'react';
-import { useEffect } from 'react/cjs/react.production.min';
+import {useEffect} from 'react/cjs/react.production.min';
 import {UserContext} from '../hooks/context/user_context';
 export const getUserDetails = async uid => {
   return await firestore().collection('users').doc(uid).get();
@@ -8,6 +8,10 @@ export const getUserDetails = async uid => {
 
 export const createUser = async user => {
   return await firestore().collection('users').doc(user.uid).set(user);
+};
+
+export const getAllUser = async () => {
+  return await firestore().collection('users').get();
 };
 // export function listenForAnyUserChanges(user) {
 //   useEffect(() => {

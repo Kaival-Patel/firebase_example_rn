@@ -1,9 +1,10 @@
 import {View, Text, Image} from 'native-base';
 import React from 'react';
 import {StyleSheet} from 'react-native';
-import {UserContext} from '../../hooks/context/user_context';
+import {UserContext} from '../hooks/context/user_context';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-export const ChatListHeader = () => {
+import {TouchableOpacity} from 'react-native-gesture-handler';
+export const ChatListHeader = ({navigation, route}) => {
   return (
     <View>
       <View style={style.appBar}>
@@ -18,11 +19,16 @@ export const ChatListHeader = () => {
           </UserContext.Consumer>
         </View>
         <View flexDirection="row" alignContent="center">
-          <FontAwesome
-            size={18}
-            name="search"
-            style={{marginHorizontal: 5, paddingTop: 5}}
-          />
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate('NewChatSearch');
+            }}>
+            <FontAwesome
+              size={18}
+              name="search"
+              style={{marginHorizontal: 5, paddingTop: 5}}
+            />
+          </TouchableOpacity>
           <UserContext.Consumer>
             {user => (
               <Image
