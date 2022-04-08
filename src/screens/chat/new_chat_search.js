@@ -5,6 +5,7 @@ import {SearchBar} from 'react-native-screens';
 import {CustomTextInput} from '../../components/text_input';
 import {getAllUser} from '../../backend/user_service';
 import {storyData} from '../../constants/constant';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 
 export const NewChatSearch = ({navigation, route}) => {
@@ -68,7 +69,13 @@ export const NewChatSearch = ({navigation, route}) => {
         <FlatList
           data={search === '' ? dbData : searchedResult}
           renderItem={({item}) => (
-            <TouchableOpacity onPress={() => {}}>
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate('ChatRoom', {
+                  chatRoomId: null,
+                  userId: item.uid,
+                });
+              }}>
               <View
                 flexDirection={'row'}
                 alignItems="center"

@@ -3,14 +3,16 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {extendTheme, NativeBaseProvider} from 'native-base';
 import React from 'react';
 import {View, Text} from 'react-native';
-
+import chatRoomAppBar from './src/components/chat_room_appbar';
 import {UserProvider} from './src/hooks/context/user_context';
 import {HomeScreen} from './src/screens/home/home_screen';
 import {LoginScreen} from './src/screens/auth/login_screen';
 import {SignupScreen} from './src/screens/auth/signup_screen';
 import Fonts from './src/global/fonts';
 import {AutoLoginChecker} from './src/screens/auth/auto_login_checker';
-import { NewChatSearch } from './src/screens/chat/new_chat_search';
+import {NewChatSearch} from './src/screens/chat/new_chat_search';
+import ChatRoom from './src/screens/chat/chat_room';
+import {ChatRoomAppBar} from './src/components/chat_room_appbar';
 export default App = () => {
   const Stack = createStackNavigator();
   const newColorTheme = {
@@ -81,11 +83,18 @@ export default App = () => {
                   headerShown: false,
                 }}
               />
-               <Stack.Screen
+              <Stack.Screen
                 name="NewChatSearch"
                 component={NewChatSearch}
                 options={{
                   headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="ChatRoom"
+                component={ChatRoom}
+                options={{
+                  title: props => <ChatRoomAppBar />,
                 }}
               />
             </Stack.Navigator>
