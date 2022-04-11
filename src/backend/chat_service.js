@@ -12,3 +12,11 @@ export const buildChatRoomModel = ({chatStartedAt,lastChatUpdatedAt,lastMessage,
 export const createChatRoom = async ({chatRoomModel}) => {
   return await firestore().collection('chat_rooms').add(chatRoomModel);
 };
+
+export const getUserInChatRoom = async ({userId})=>{
+  return await firestore().collection('chat_rooms').where('users',"array-contains-any",[userId]).get();
+}
+
+export const streamChatRoom = ({chatRoomId})=>{
+  return firestore().collection('chat_rooms').doc(chatRoomId);
+}
