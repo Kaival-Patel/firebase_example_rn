@@ -1,5 +1,5 @@
 import {firebase} from '@react-native-firebase/firestore';
-import {Center, FlatList, Spinner, View} from 'native-base';
+import {Center, FlatList, Spinner, Text, View} from 'native-base';
 import React from 'react';
 import {StyleSheet} from 'react-native';
 import {useState} from 'react/cjs/react.production.min';
@@ -7,7 +7,10 @@ import {
   buildChatRoomModel,
   createChatRoom,
   getUserInChatRoom,
+  sendMessageInChatRoom,
+  streamChatMessageRoom,
   streamChatRoom,
+  updateChatRoom,
 } from '../../backend/chat_service';
 import {getAllUser, getUserDetails} from '../../backend/user_service';
 import {CustomTextInput} from '../../components/text_input';
@@ -16,6 +19,7 @@ export default ChatRoom = ({navigation, route}) => {
   const [message, setMessage] = React.useState('');
   const [chatRoomId, setChatRoomId] = React.useState('');
   const [chatRoomDetails, setChatRoomDetails] = React.useState({});
+  const [chatMessages, setChatMessages] = React.useState([]);
   const [userDetails, setUserDetails] = React.useState({});
   const [isLoading, setIsLoading] = React.useState(true);
   const userProvider = React.useContext(UserContext);
@@ -40,6 +44,7 @@ export default ChatRoom = ({navigation, route}) => {
           ) {
             setChatRoomId(doc.id);
             startStreamingChatRoom();
+            startStreamingChatRoomMessage();
             console.log('USER CHAT ALREADY FOUND AT ' + doc.id);
           }
         });
@@ -58,33 +63,68 @@ export default ChatRoom = ({navigation, route}) => {
   // }, []);
 
   function sendChatMessage() {
-    if (route.params.chatRoomId == null) {
+    if (chatRoomId === '') {
       const chatModel = {
         chatStartedAt: firebase.firestore.FieldValue.serverTimestamp(),
         lastChatUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
         lastMessage: message,
         users: [route.params.userId, userProvider.user.uid],
       };
-      setMessage('');
+
       createChatRoom({chatRoomModel: chatModel})
         .then(ref => {
           setChatRoomId(ref.id);
           startStreamingChatRoom();
+          startStreamingChatRoomMessage();
+          sendMessage();
         })
         .catch(err => console.error(err));
+    } else {
+      updateChatRoom({
+        chatRoomId: chatRoomId,
+        chatRoomModel: {
+          lastChatUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          lastMessage: message,
+        },
+      });
+      sendMessage();
     }
   }
 
   function startStreamingChatRoom() {
     streamChatRoom({chatRoomId: chatRoomId}).onSnapshot(doc => {
-      setChatRoomId(doc.id);
       setChatRoomDetails(doc.data());
     });
   }
 
-  function sendMessage() {}
+  function startStreamingChatRoomMessage() {
+    streamChatMessageRoom({chatRoomId: chatRoomId}).onSnapshot(snap => {
+      setChatMessages([]);
+      snap.docs.forEach(doc => {
+        chatMessages.push(doc);
+      });
+      setChatMessages(chatMessages);
+    });
+  }
 
-  styles = StyleSheet.create({
+  function sendMessage() {
+    const messageModel = {
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      message: message,
+      sendBy: userProvider.user.uid,
+      readByReceiverAt: null,
+      status: 1,
+      type: 1,
+    };
+    setMessage('');
+    console.log('MESSAGING IN CHAT ROOM ID =>' + chatRoomId);
+    sendMessageInChatRoom({chatRoomId: chatRoomId, message: messageModel})
+      .then(ref => console.log('SENT'))
+      .catch(err => console.error(err));
+  }
+
+  const styles = StyleSheet.create({
     scaffold: {
       flex: 1,
       alignContent: 'space-between',
@@ -98,7 +138,12 @@ export default ChatRoom = ({navigation, route}) => {
     </View>
   ) : (
     <View style={styles.scaffold}>
-      <FlatList />
+      <FlatList
+        data={chatMessages}
+        renderItem={({item}) => {
+          <Text>{item.data().message}</Text>;
+        }}
+      />
       <View marginY={5}>
         <CustomTextInput
           label={'Type Message Here'}
