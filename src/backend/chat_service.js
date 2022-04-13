@@ -30,5 +30,5 @@ export const streamChatRoom = ({chatRoomId})=>{
 }
 
 export const streamChatMessageRoom = ({chatRoomId})=>{
-  return firestore().collection('chat_rooms').doc(chatRoomId).collection("messages");
+  return firestore().collection('chat_rooms').doc(chatRoomId).collection("messages").orderBy('createdAt','desc');
 }

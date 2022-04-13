@@ -1,7 +1,7 @@
 import {firebase} from '@react-native-firebase/firestore';
 import {Center, FlatList, Spinner, Text, View} from 'native-base';
 import React from 'react';
-import {StyleSheet} from 'react-native';
+import {StyleSheet, Dimensions} from 'react-native';
 import {useState} from 'react/cjs/react.production.min';
 import {
   buildChatRoomModel,
@@ -23,6 +23,7 @@ export default ChatRoom = ({navigation, route}) => {
   const [userDetails, setUserDetails] = React.useState({});
   const [isLoading, setIsLoading] = React.useState(true);
   const userProvider = React.useContext(UserContext);
+  const windowWidth = Dimensions.get('window').width;
   React.useEffect(() => {
     if (route.params.chatRoomId) {
       console.log(route.params.chatRoomId);
@@ -32,6 +33,11 @@ export default ChatRoom = ({navigation, route}) => {
       checkPreExistInDb(route.params.userId);
     }
   }, []);
+
+  React.useEffect(() => {
+    startStreamingChatRoom();
+    startStreamingChatRoomMessage();
+  }, [chatRoomId]);
 
   function checkPreExistInDb(userId) {
     getUserInChatRoom({userId: userId})
@@ -43,8 +49,7 @@ export default ChatRoom = ({navigation, route}) => {
             chatSnap.users.includes(userProvider.user.uid)
           ) {
             setChatRoomId(doc.id);
-            startStreamingChatRoom();
-            startStreamingChatRoomMessage();
+
             console.log('USER CHAT ALREADY FOUND AT ' + doc.id);
           }
         });
@@ -74,8 +79,8 @@ export default ChatRoom = ({navigation, route}) => {
       createChatRoom({chatRoomModel: chatModel})
         .then(ref => {
           setChatRoomId(ref.id);
-          startStreamingChatRoom();
-          startStreamingChatRoomMessage();
+          // startStreamingChatRoom();
+          // startStreamingChatRoomMessage();
           sendMessage();
         })
         .catch(err => console.error(err));
@@ -98,13 +103,21 @@ export default ChatRoom = ({navigation, route}) => {
   }
 
   function startStreamingChatRoomMessage() {
+    console.log('STARTING MESSAGE STREAM ON ' + chatRoomId);
     streamChatMessageRoom({chatRoomId: chatRoomId}).onSnapshot(snap => {
-      setChatMessages([]);
-      snap.docs.forEach(doc => {
-        chatMessages.push(doc);
-      });
-      setChatMessages(chatMessages);
+      updateMessageChatList(snap);
     });
+  }
+
+  function updateMessageChatList(snap) {
+    setChatMessages([]);
+    snap.docs.forEach(doc => {
+      if (!chatMessages.includes(doc)) {
+        chatMessages.push(doc);
+      }
+    });
+    setChatMessages(chatMessages);
+    console.log(chatMessages.length);
   }
 
   function sendMessage() {
@@ -139,10 +152,63 @@ export default ChatRoom = ({navigation, route}) => {
   ) : (
     <View style={styles.scaffold}>
       <FlatList
+        inverted
         data={chatMessages}
-        renderItem={({item}) => {
-          <Text>{item.data().message}</Text>;
-        }}
+        renderItem={({item}) => (
+          <View>
+            <View
+              flex={1}
+              flexDirection="row"
+              width={windowWidth / 2}
+              bg={'#8cbafa'}
+              padding={2}
+              alignSelf={
+                item.data().sendBy == userProvider.user.uid
+                  ? 'flex-end'
+                  : 'flex-start'
+              }
+              borderBottomLeftRadius={
+                item.data().sendBy == userProvider.user.uid ? 10 : 0
+              }
+              borderBottomRightRadius={
+                item.data().sendBy == userProvider.user.uid ? 0 : 10
+              }
+              borderTopLeftRadius={10}
+              borderTopRightRadius={10}
+              margin={1}>
+              <Text>{item.data().message}</Text>
+            </View>
+            <View
+              alignSelf={
+                item.data().sendBy == userProvider.user.uid
+                  ? 'flex-end'
+                  : 'flex-start'
+              }
+              marginBottom={1}
+              paddingX={2}
+              flexDirection={'row'}>
+              {item.data().readByReceiverAt != null ? (
+                <Text color={'gray.400'} marginRight={1}>
+                  {'Read •'}
+                </Text>
+              ) : (
+                <Text color={'gray.400'} marginRight={1}>
+                  {'Sent •'}
+                </Text>
+              )}
+              <Text color={'gray.400'}>
+                {new Date(item.data().createdAt.toDate()).toLocaleTimeString(
+                  [],
+                  {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  },
+                )}
+              </Text>
+            </View>
+          </View>
+        )}
+        keyExtractor={(item, index) => item.id + '' + index}
       />
       <View marginY={5}>
         <CustomTextInput
