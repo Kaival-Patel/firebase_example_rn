@@ -34,11 +34,6 @@ export default ChatRoom = ({navigation, route}) => {
     }
   }, []);
 
-  React.useEffect(() => {
-    startStreamingChatRoom();
-    startStreamingChatRoomMessage();
-  }, [chatRoomId]);
-
   function checkPreExistInDb(userId) {
     getUserInChatRoom({userId: userId})
       .then(snap => {
@@ -96,28 +91,28 @@ export default ChatRoom = ({navigation, route}) => {
     }
   }
 
-  function startStreamingChatRoom() {
+  React.useEffect(() => {
     streamChatRoom({chatRoomId: chatRoomId}).onSnapshot(doc => {
       setChatRoomDetails(doc.data());
     });
-  }
+  }, [chatRoomId]);
 
-  function startStreamingChatRoomMessage() {
+  React.useEffect(() => {
     console.log('STARTING MESSAGE STREAM ON ' + chatRoomId);
     streamChatMessageRoom({chatRoomId: chatRoomId}).onSnapshot(snap => {
       updateMessageChatList(snap);
     });
-  }
+  }, [chatRoomId]);
 
   function updateMessageChatList(snap) {
-    setChatMessages([]);
+    // setChatMessages([]);
     snap.docs.forEach(doc => {
-      if (!chatMessages.includes(doc)) {
+      if (chatMessages.find((e, i) => doc.id == e.id) == undefined) {
         chatMessages.push(doc);
       }
     });
     setChatMessages(chatMessages);
-    console.log(chatMessages.length);
+    chatMessages.map((e, i) => console.log(e.data().message));
   }
 
   function sendMessage() {
@@ -145,6 +140,21 @@ export default ChatRoom = ({navigation, route}) => {
     },
   });
 
+  function getMessageDateTime(createdAt) {
+    if (createdAt != null) {
+      try {
+        const date = new Date(createdAt.toDate()).toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+        return date;
+      } catch (err) {
+        return '';
+      }
+    }
+    return '';
+  }
+
   return isLoading ? (
     <View flex={1} justifyContent="center">
       <Spinner color="primary.100" />
@@ -159,7 +169,7 @@ export default ChatRoom = ({navigation, route}) => {
             <View
               flex={1}
               flexDirection="row"
-              width={windowWidth / 2}
+              maxWidth={windowWidth / 2}
               bg={'#8cbafa'}
               padding={2}
               alignSelf={
@@ -197,13 +207,7 @@ export default ChatRoom = ({navigation, route}) => {
                 </Text>
               )}
               <Text color={'gray.400'}>
-                {new Date(item.data().createdAt.toDate()).toLocaleTimeString(
-                  [],
-                  {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  },
-                )}
+                {getMessageDateTime(item.data().createdAt)}
               </Text>
             </View>
           </View>

@@ -12,3 +12,7 @@ export const signUpWithEmailPassword = (email, password) => {
 export const getCurrentUser = () => {
   return auth().currentUser;
 }
+
+export const logout = () =>{
+  return auth().signOut();
+}
