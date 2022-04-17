@@ -1,7 +1,9 @@
 import {firebase} from '@react-native-firebase/firestore';
+import {useNavigation} from '@react-navigation/native';
 import {Center, FlatList, Spinner, Text, View} from 'native-base';
 import React from 'react';
 import {StyleSheet, Dimensions} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import {useState} from 'react/cjs/react.production.min';
 import {
   buildChatRoomModel,
@@ -13,8 +15,73 @@ import {
   updateChatRoom,
 } from '../../backend/chat_service';
 import {getAllUser, getUserDetails} from '../../backend/user_service';
+import {ChatRoomAppBar} from '../../components/chat_room_appbar';
 import {CustomTextInput} from '../../components/text_input';
-import {UserContext} from '../../hooks/context/user_context';
+import {UserContext, UserProvider} from '../../hooks/context/user_context';
+
+// class ChatRoom extends React.Component {
+//   constructor(props) {
+//     super(props);
+//     console.log(this.context);
+//     this.state = {
+//       message: '',
+//       chatRoomId: '',
+//       chatRoomDetails: {},
+//       chatMessages: [],
+//       userDetails: {},
+//       isLoading: true,
+//       windowWidth: Dimensions.get('window').width,
+//     };
+//     if (this.props.route.params.chatRoomId) {
+//       console.log(route.params.chatRoomId);
+//       this.setState({
+//         chatRoomId: this.props.route.params.chatRoomId,
+//       });
+//     } else {
+//       console.log(this.props.route.params.userId);
+//       checkPreExistInDb(this.props.route.params.userId);
+//     }
+//   }
+
+//   checkPreExistInDb(userId) {
+//     getUserInChatRoom({userId: userId})
+//       .then(snap => {
+//         snap.docs.forEach(doc => {
+//           const chatSnap = doc.data();
+//           if (
+//             chatSnap.users.includes(userId) &&
+//             chatSnap.users.includes(userProvider.user.uid)
+//           ) {
+//             setChatRoomId(doc.id);
+
+//             console.log('USER CHAT ALREADY FOUND AT ' + doc.id);
+//           }
+//         });
+//         setIsLoading(false);
+//       })
+//       .catch(err => {
+//         setIsLoading(false);
+//         console.error(err);
+//       });
+//   }
+
+//   componentDidMount() {
+//     console.log('Component Mounted');
+//   }
+
+//   componentWillUnmount() {
+//     console.log('Component unmounted');
+//   }
+
+//   render() {
+//     return (
+//       <UserContext.Consumer>
+//         {user => <Text>{user.user.email}</Text>}
+//       </UserContext.Consumer>
+//     );
+//   }
+// }
+// export default ChatRoom;
 export default ChatRoom = ({navigation, route}) => {
   const [message, setMessage] = React.useState('');
   const [chatRoomId, setChatRoomId] = React.useState('');
@@ -24,6 +91,17 @@ export default ChatRoom = ({navigation, route}) => {
   const [isLoading, setIsLoading] = React.useState(true);
   const userProvider = React.useContext(UserContext);
   const windowWidth = Dimensions.get('window').width;
+
+  //SET APP BAR
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: props => {
+        return <ChatRoomAppBar navigation={navigation} route={route} />;
+      },
+    });
+  }, [navigation]);
+
+  //CHECK IF CHAT ROOM ID AVAILABLE
   React.useEffect(() => {
     if (route.params.chatRoomId) {
       console.log(route.params.chatRoomId);
@@ -34,6 +112,7 @@ export default ChatRoom = ({navigation, route}) => {
     }
   }, []);
 
+  //CHECK IF BOTH PARTIES CHAT EARLIER
   function checkPreExistInDb(userId) {
     getUserInChatRoom({userId: userId})
       .then(snap => {
@@ -62,6 +141,7 @@ export default ChatRoom = ({navigation, route}) => {
   //   });
   // }, []);
 
+  //SEND CHAT MESSAGE
   function sendChatMessage() {
     if (chatRoomId === '') {
       const chatModel = {
@@ -91,29 +171,31 @@ export default ChatRoom = ({navigation, route}) => {
     }
   }
 
+  //STREAM CHAT ROOM DETAILS
   React.useEffect(() => {
     streamChatRoom({chatRoomId: chatRoomId}).onSnapshot(doc => {
       setChatRoomDetails(doc.data());
     });
   }, [chatRoomId]);
 
+  //STREAM MESSAGES
   React.useEffect(() => {
     console.log('STARTING MESSAGE STREAM ON ' + chatRoomId);
-    streamChatMessageRoom({chatRoomId: chatRoomId}).onSnapshot(snap => {
-      updateMessageChatList(snap);
-    });
-  }, [chatRoomId]);
-
-  function updateMessageChatList(snap) {
-    // setChatMessages([]);
-    snap.docs.forEach(doc => {
-      if (chatMessages.find((e, i) => doc.id == e.id) == undefined) {
-        chatMessages.push(doc);
+    const unsubscribe = streamChatMessageRoom({
+      chatRoomId: chatRoomId,
+    }).onSnapshot(snap => {
+      const chatArray = [];
+      for (let index = 0; index < snap.docs.length; index++) {
+        const element = snap.docs[index];
+        chatArray.push(element);
       }
+      setChatMessages(chatArray);
+      chatArray.map((e, i) => console.log(e.data().message));
     });
-    setChatMessages(chatMessages);
-    chatMessages.map((e, i) => console.log(e.data().message));
-  }
+    return () => {
+      unsubscribe();
+    };
+  }, [chatRoomId]);
 
   function sendMessage() {
     const messageModel = {
@@ -149,10 +231,10 @@ export default ChatRoom = ({navigation, route}) => {
         });
         return date;
       } catch (err) {
-        return '';
+        return 'now';
       }
     }
-    return '';
+    return 'now';
   }
 
   return isLoading ? (

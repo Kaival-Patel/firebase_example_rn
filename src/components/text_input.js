@@ -40,14 +40,13 @@ export const CustomTextInput = ({
               <FontAwesome
                 style={{
                   ...style.icon,
-                  color: isFocused ? 'brand.200' : '#C0C0C0',
+                  color: isFocused ? '#0246AD' : '#C0C0C0',
                 }}
                 name={icon}
               />
             }
             size={10}
             ml="2"
-            color="primary.200"
           />
         }
         InputRightElement={

@@ -93,10 +93,9 @@ export default App = () => {
               <Stack.Screen
                 name="ChatRoom"
                 component={ChatRoom}
-                options={{
-                  title: props => <ChatRoomAppBar />,
-                }}
               />
+              {/* {props => <ChatRoom/>} */}
+              {/* </Stack.Screen> */}
             </Stack.Navigator>
           }
         </NavigationContainer>
