@@ -53,6 +53,7 @@ export const streamChatMessageRoom = ({chatRoomId}) => {
 };
 
 export const streamChatList = ({userId}) => {
+  console.info("STREAM REQ FOR USER=>",userId);
   return firestore()
     .collection('chat_rooms')
     .where('users', 'array-contains-any', [userId])
